@@ -44,6 +44,7 @@
               />
             </div>
             <div
+              v-if="ticker !== ''"
               class="flex bg-white shadow-md p-1 rounded-md shadow-md flex-wrap"
             >
               <span
