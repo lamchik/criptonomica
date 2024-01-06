@@ -238,7 +238,7 @@ export default {
       );
       const response = await f.json();
       this.coinlist = response.Data;
-    },
+    }
   },
   mounted() {
     this.getCoinlist();
