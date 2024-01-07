@@ -35,7 +35,7 @@
             <div class="mt-1 relative rounded-md shadow-md mb-1">
               <input
                 v-model="ticker"
-                @keydown.enter="add"
+                @keydown.enter="add(ticker)"
                 type="text"
                 name="wallet"
                 id="wallet"
@@ -44,12 +44,13 @@
               />
             </div>
             <div
-              v-if="ticker !== ''"
+              v-if="ticker !== '' && tools.length !== 0"
               class="flex bg-white shadow-md p-1 rounded-md shadow-md flex-wrap"
             >
               <span
                 v-for="tool in tools"
                 :key="tool"
+                @click="add(tool)"
                 class="inline-flex items-center px-2 m-1 rounded-md text-xs font-medium bg-gray-300 text-gray-800 cursor-pointer"
               >
                 {{ tool }}
@@ -59,7 +60,7 @@
           </div>
         </div>
         <button
-          @click="add"
+          @click="add(ticker)"
           type="button"
           class="my-4 inline-flex items-center py-2 px-4 border border-transparent shadow-sm text-sm leading-4 font-medium rounded-full text-white bg-gray-600 hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
         >
@@ -192,9 +193,9 @@ export default {
     }
   },
   methods: {
-    add() {
+    add(ticker) {
       const currentTicker = {
-        name: this.ticker,
+        name: ticker,
         price: "-"
       };
 
@@ -213,7 +214,7 @@ export default {
           this.graph.push(data.USD);
         }
       }, 5000);
-      this.ticker = "";
+      ticker = "";
     },
 
     select(ticker) {
