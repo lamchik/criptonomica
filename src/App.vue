@@ -185,6 +185,21 @@ export default {
     };
   },
 
+  mounted() {
+    this.getCoinlist();
+  },
+
+  created() {
+    const tickersData = localStorage.getItem("cryptonomicon-list");
+
+    if (tickersData) {
+      this.tickers = JSON.parse(tickersData);
+      this.tickers.forEach(ticker => {
+        this.subscribeToUpdates(ticker.name);
+      });
+    }
+  },
+
   computed: {
     tools: function() {
       const res = Object.keys(this.coinlist).filter(tic => {
@@ -193,9 +208,25 @@ export default {
       if (res.length > 4) {
         return res.slice(0, 4);
       } else return res;
-    },
+    }
   },
   methods: {
+    subscribeToUpdates(tickerName) {
+      setInterval(async () => {
+        const f = await fetch(
+          `https://min-api.cryptocompare.com/data/price?fsym=${tickerName}&tsyms=USD&api_key=ce3fd966e7a1d10d65f907b20bf000552158fd3ed1bd614110baa0ac6cb57a7e`
+        );
+        const data = await f.json();
+
+        // currentTicker.price =  data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
+        this.tickers.find(t => t.name === tickerName).price =
+          data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
+
+        if (this.sel?.name === tickerName) {
+          this.graph.push(data.USD);
+        }
+      }, 5000);
+    },
     add(ticker) {
       const currentTicker = {
         name: ticker,
@@ -204,21 +235,13 @@ export default {
       if (this.tickers.find(tick => tick.name === ticker)) {
         return (this.error = "Такой тикер уже добавлен");
       } else {
-        (this.error = ""), this.tickers.push(currentTicker);
-        setInterval(async () => {
-          const f = await fetch(
-            `https://min-api.cryptocompare.com/data/price?fsym=${currentTicker.name}&tsyms=USD&api_key=ce3fd966e7a1d10d65f907b20bf000552158fd3ed1bd614110baa0ac6cb57a7e`
-          );
-          const data = await f.json();
-
-          // currentTicker.price =  data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
-          this.tickers.find(t => t.name === currentTicker.name).price =
-            data.USD > 1 ? data.USD.toFixed(2) : data.USD.toPrecision(2);
-
-          if (this.sel?.name === currentTicker.name) {
-            this.graph.push(data.USD);
-          }
-        }, 5000);
+        this.error = "";
+        this.tickers.push(currentTicker);
+        localStorage.setItem(
+          "cryptonomicon-list",
+          JSON.stringify(this.tickers)
+        );
+        this.subscribeToUpdates(currentTicker.name);
         ticker = "";
       }
     },
@@ -247,9 +270,6 @@ export default {
       const response = await f.json();
       this.coinlist = response.Data;
     }
-  },
-  mounted() {
-    this.getCoinlist();
   }
 };
 </script>
